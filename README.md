@@ -1,6 +1,12 @@
-[![CodeCrafters progress](BANNER_PLACEHOLDER)](https://app.codecrafters.io/users/EhsanIC)
+<p align="center"><b>English</b> | <a href="README.fa.md">فارسی</a></p>
 
-# http
+# http/1.1 in Python
+
+<p align="center">
+  <a href="https://app.codecrafters.io/users/EhsanIC">
+    <img src="https://backend.codecrafters.io/progress/http-server/f9ed6ef7-6647-42c3-8f7d-071db4eb3c41" alt="CodeCrafters progress" width="100%"/>
+  </a>
+</p>
 
 A from-scratch HTTP/1.1 server in Python, using only standard-library sockets and no web frameworks.
 
@@ -45,74 +51,26 @@ http/
 
 **Handler.** A complete request is parsed into a `Request` (method, path, route, headers, body), looked up in `ROUTES`, and passed to the matching handler. The handler returns the response bytes. If the request had `Connection: close`, the header is added and the per-connection loop returns, closing the socket.
 
-## Run locally
+## Protocol
 
-```sh
-./your_program.sh
+Plain HTTP/1.1 over TCP. One exchange:
+
+```http
+GET /echo/banana HTTP/1.1
+Host: localhost:4221
+
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Content-Length: 6
+
+banana
 ```
 
-With a directory for `/files`:
-
-```sh
-./your_program.sh --directory ./test_files_dir
-```
-
-Or directly with `uv`:
-
-```sh
-uv run python -m app.main --directory ./test_files_dir
-```
-
-Submit:
-
-```sh
-codecrafters submit
-```
-
-## Try it with curl
-
-Root:
-
-```sh
-curl -v http://localhost:4221/
-```
-
-Echo:
-
-```sh
-curl -v http://localhost:4221/echo/banana
-```
-
-User-Agent:
-
-```sh
-curl -v http://localhost:4221/user-agent -H "User-Agent: blueberry/apple"
-```
-
-Get a file:
-
-```sh
-curl -v http://localhost:4221/files/example.txt
-```
-
-Upload a file:
-
-```sh
-curl -v -X POST http://localhost:4221/files/example.txt \
-  -H "Content-Type: application/octet-stream" --data-binary "hello"
-```
-
-gzip:
-
-```sh
-curl -v --compressed http://localhost:4221/echo/banana
-```
-
-Connection: close:
-
-```sh
-curl -v -H "Connection: close" http://localhost:4221/echo/banana
-```
+- Requests are framed by `Content-Length`; without it the body is empty.
+- Responses always carry `Content-Type` and `Content-Length`.
+- Status codes: `200`, `201`, `404`.
+- `Accept-Encoding: gzip` compresses the body and adds `Content-Encoding: gzip`.
+- `Connection: close` is echoed back, then the socket is closed.
 
 ## Testing
 
