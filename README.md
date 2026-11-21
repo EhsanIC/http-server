@@ -10,7 +10,7 @@
 
 A from-scratch HTTP/1.1 server in Python, using only standard-library sockets and no web frameworks.
 
-## Features
+## ✨ Features
 
 - Raw TCP server on `localhost:4221`
 - Routes: `GET /`, `GET /echo/{str}`, `GET /user-agent`, `GET /files/{filename}`, `POST /files/{filename}`; everything else returns `404`
@@ -21,7 +21,34 @@ A from-scratch HTTP/1.1 server in Python, using only standard-library sockets an
 - Request framing by `Content-Length`; leftover bytes stay in the buffer, so pipelined requests work
 - `Connection: close` is echoed in the response and the socket is closed afterwards
 
-## Project structure
+## 🚀 Quick start
+
+```bash
+git clone https://github.com/EhsanIC/http
+cd http
+./your_program.sh
+```
+
+Then, in another terminal:
+
+```text
+curl -v http://localhost:4221/echo/banana
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Content-Length: 6
+
+banana
+```
+
+## ⚙️ How it works
+
+**Accept loop.** `main()` binds `localhost:4221` and starts a daemon thread for every accepted connection, so one slow client cannot block the others.
+
+**Buffer and framing.** Each connection owns a byte buffer. `parse_request()` looks for `\r\n\r\n`, reads `Content-Length`, and returns `(raw, leftover)` only when the full body has arrived. Otherwise it returns `(None, buffer)` and the loop reads more. The leftover stays in the buffer, which is what makes pipelining work: two requests in one packet are handled as two separate requests.
+
+**Handler.** A complete request is parsed into a `Request` (method, path, route, headers, body), looked up in `ROUTES`, and passed to the matching handler. The handler returns the response bytes. If the request had `Connection: close`, the header is added and the per-connection loop returns, closing the socket.
+
+## 🗂️ Project structure
 
 ```
 http/
@@ -43,22 +70,20 @@ http/
 └── docs/                         # Screenshots used in this README
 ```
 
-## How it works
+## 📡 Protocol
 
-**Accept loop.** `main()` binds `localhost:4221` and starts a daemon thread for every accepted connection, so one slow client cannot block the others.
+Requests and responses are plain HTTP/1.1 over TCP.
 
-**Buffer and framing.** Each connection owns a byte buffer. `parse_request()` looks for `\r\n\r\n`, reads `Content-Length`, and returns `(raw, leftover)` only when the full body has arrived. Otherwise it returns `(None, buffer)` and the loop reads more. The leftover stays in the buffer, which is what makes pipelining work: two requests in one packet are handled as two separate requests.
-
-**Handler.** A complete request is parsed into a `Request` (method, path, route, headers, body), looked up in `ROUTES`, and passed to the matching handler. The handler returns the response bytes. If the request had `Connection: close`, the header is added and the per-connection loop returns, closing the socket.
-
-## Protocol
-
-Plain HTTP/1.1 over TCP. One exchange:
+Request:
 
 ```http
 GET /echo/banana HTTP/1.1
 Host: localhost:4221
+```
 
+Response:
+
+```http
 HTTP/1.1 200 OK
 Content-Type: text/plain
 Content-Length: 6
@@ -72,13 +97,7 @@ banana
 - `Accept-Encoding: gzip` compresses the body and adds `Content-Encoding: gzip`.
 - `Connection: close` is echoed back, then the socket is closed.
 
-## Testing
-
-### CodeCrafters stage tests
-
-![CodeCrafters tests](docs/codecrafters-tests.png)
-
-All official stages pass.
+## 🧪 Testing
 
 ### Custom test client
 
@@ -92,11 +111,11 @@ pwsh ./client_test.ps1
 
 This test client was generated with AI.
 
-## Authorship
+## ✍️ Authorship
 
 The HTTP server in `app/` was written by me. AI was used for explanations and code review. The test client (`test/` and `client_test.ps1`) was generated with AI.
 
-## What I learned
+## 📚 What I learned
 
 - How HTTP/1.1 is framed on the wire: TCP delivers a byte stream, and `Content-Length` — not packet boundaries — decides where one request ends.
 - Why a per-connection buffer is required for keep-alive and pipelining; reading once per request breaks as soon as two requests share a packet.
