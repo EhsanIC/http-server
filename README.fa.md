@@ -31,8 +31,11 @@ cd http
 
 سپس در یک ترمینال دیگر:
 
-```text
+```bash
 curl -v http://localhost:4221/echo/banana
+```
+
+```http
 HTTP/1.1 200 OK
 Content-Type: text/plain
 Content-Length: 6
