@@ -112,7 +112,6 @@ pwsh ./client_test.ps1
 
 ![client test](docs/client-test.png)
 
-This test client was generated with AI.
 
 ## ✍️ Authorship
 
